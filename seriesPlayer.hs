@@ -7,6 +7,10 @@ import qualified Data.Map as Map
 main = do
   (episodeNo:other) <- getArgs
   dirs <- getDirectoryContents "."
+  watchEps episodeNo dirs
+  
+
+watchEps episodeNo dirs = do
   let results = zip [1 .. ] (filter (findInString episodeNo) dirs)
       resultMap = Map.fromList $ results
       options = unlines $ map option results
@@ -14,10 +18,20 @@ main = do
   putStrLn $ unlines (map (\a -> option a) results)
   putStrLn "Choose an option dude : "
   chosen <- getLine
-  rawSystem "mplayer" [handleLookup(Map.lookup (read chosen) resultMap)] 
+  success <- handleLookup(Map.lookup (read chosen) resultMap)
+  if success 
+    then do
+           putStrLn "Watch the next episode?"
+           watchEps (show ((read episodeNo) + 1)) dirs 
+  else watchEps episodeNo dirs
 
-handleLookup (Just x) = x
-handleLookup Nothing = "Pick something dumbass"
+handleLookup (Just x) = do
+  rawSystem "mplayer" [x]
+  putStrLn $ "done with " ++ x
+  return True
+handleLookup Nothing = do
+  putStrLn "Pick something dumbass"
+  return False
   
 
 findInString :: String -> String -> Bool
