@@ -59,5 +59,8 @@ continue dirs = do
   
 errHandler :: IOError -> IO ()
 errHandler e
-       | isDoesNotExistError e = putStrLn "You do not have a continue file yet"
+       | isDoesNotExistError e = do
+               putStrLn "You do not have a continue file yet, starting at episode 1"
+               dirs <- getDirectoryContents "."
+               watchEps (show 1) dirs
        | otherwise = ioError e
