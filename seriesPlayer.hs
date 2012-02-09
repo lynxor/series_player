@@ -12,7 +12,8 @@ main = do
   dirs <- getDirectoryContents "."
   handleArg arg dirs
   
-handleArg "continue" dirs = (continue dirs) `catch` errHandler
+handleArg "--prev" dirs = prev dirs
+handleArg "--continue" dirs = (continue dirs) `catch` errHandler
 handleArg ep dirs = watchEps ep dirs  
 
 watchEps episodeNo dirs = do
@@ -48,6 +49,12 @@ findInString needle haystack = foldl foldFunc False (tails haystack)
 epPlusOne :: String -> String
 epPlusOne ep = show $ (read ep) + 1
 
+prev dirs = do
+  contents <- readFile ".series_continue"
+  let episodeNo = show $ (read (head ( lines contents))) - 1
+  putStrLn $ "Starting previous: " ++ episodeNo ++ " .."
+  watchEps episodeNo dirs
+
 continue dirs = do
   contents <- readFile ".series_continue"
   let episodeNo = head $ lines contents
@@ -57,6 +64,7 @@ continue dirs = do
   yn <- getLine
   handle yn episodeNo
   
+
 errHandler :: IOError -> IO ()
 errHandler e
        | isDoesNotExistError e = do
