@@ -4,6 +4,8 @@ import System.IO
 import System.IO.Error
 import Data.List
 import System.Cmd
+import Search
+import Data.Function (on)
 
 import qualified Data.Map as Map  
 
@@ -16,8 +18,13 @@ handleArg "--prev" dirs = prev dirs
 handleArg "--continue" dirs = (continue dirs) `catch` errHandler
 handleArg ep dirs = watchEps ep dirs  
 
+isVideoFile fileName = any (isEndOf fileName) videoFiles
+    where videoFiles = ["mkv", "avi", "mp4", "mpg"]
+          isEndOf = flip endsWith
+
 watchEps episodeNo dirs = do
-  let results = zip [1 .. ] (filter (findInString episodeNo) dirs)
+  let unsorted = filter isVideoFile (filter (findInString episodeNo) dirs)
+      results = zip [1 ..] $ reverse $ sortBy (compare `on` (searchEpNo (read episodeNo))) unsorted
       resultMap = Map.fromList $ results
       options = unlines $ map option results
       option a = show (fst a) ++ ". " ++ (snd a)
@@ -41,10 +48,6 @@ handleLookup Nothing ep = do
   return False
   
 
-findInString :: String -> String -> Bool
-findInString needle haystack = foldl foldFunc False (tails haystack)
-  where foldFunc acc item = acc || ((take len item) == needle)
-        len = length needle
 
 epPlusOne :: String -> String
 epPlusOne ep = show $ (read ep) + 1
