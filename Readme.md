@@ -4,8 +4,14 @@ Keep track of where you are with your series!  Useful for anime where there are 
 
 
 # Installation
-
-	ghc seriesPlayer.hs
+	
+Make sure you have ghc and cabal-install.	
+	
+	cabal update
+	cabal install Network
+	cabal install regex-posix
+	
+	make
 	mv seriesPlayer ~/bin # or somewhere on your path
 
 	cp series /etc/bash_completion.d/ 
